@@ -30,7 +30,7 @@ skopeo inspect --raw oci-archive:website.tar | jq '.manifests[].platform.archite
 
 podman load -i website.tar | \
   awk -F':' '{print $NF}' | \
-  xargs -i docker tag {} website
+  xargs -i podman tag {} website
 
 podman run -it --rm website
 
