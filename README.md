@@ -16,6 +16,7 @@ EOF
 
 podman build --platform=linux/amd64 --format=docker -t website:amd64 .
 podman build --platform=linux/arm64/v8 --format=docker -t website:arm64 .
+
 podman push website:amd64 docker-archive:website-amd64.tar
 skopeo inspect docker-archive:website-amd64.tar | jq
 
@@ -25,8 +26,8 @@ skopeo inspect docker-archive:website-arm64.tar | jq
 podman manifest create website:v1
 podman manifest add website:v1 docker-archive:website-amd64.tar
 podman manifest add website:v1 docker-archive:website-arm64.tar
-podman manifest push --all website:v1 oci-archive:website.tar
 
+podman manifest push --all website:v1 oci-archive:website.tar
 skopeo inspect --raw oci-archive:website.tar | jq
 
 podman load -i website.tar | \
