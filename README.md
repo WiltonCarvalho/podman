@@ -1,6 +1,7 @@
 # Podman Multi Architecture Images
 ```
 sudo apt install qemu-user-static podman buildah skopeo jq
+sudo /etc/init.d/binfmt-support restart
 
 podman ps
 
