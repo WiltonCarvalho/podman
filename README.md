@@ -14,7 +14,7 @@ RUN set -ex \
 EOF
 
 podman build --arch=amd64 -t website:amd64 .
-podman build --arch=arm64 -t website:arm64 .
+podman build --arch=arm64 --os=linux --variant=v8 -t website:arm64 .
 podman push website:amd64 docker-archive:website-amd64.tar
 skopeo inspect docker-archive:website-amd64.tar | jq
 
