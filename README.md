@@ -14,8 +14,8 @@ RUN set -ex \
     && dpkg --print-architecture
 EOF
 
-podman build --arch=amd64 -t website:amd64 .
-podman build --arch=arm64 --os=linux --variant=v8 -t website:arm64 .
+podman build --platform=linux/amd64 --format=docker -t website:amd64 .
+podman build --platform=linux/arm64/v8 --format=docker -t website:arm64 .
 podman push website:amd64 docker-archive:website-amd64.tar
 skopeo inspect docker-archive:website-amd64.tar | jq
 
@@ -27,7 +27,7 @@ podman manifest add website:v1 docker-archive:website-amd64.tar
 podman manifest add website:v1 docker-archive:website-arm64.tar
 podman manifest push --all website:v1 oci-archive:website.tar
 
-skopeo inspect --raw oci-archive:website.tar | jq '.manifests[].platform.architecture'
+skopeo inspect --raw oci-archive:website.tar | jq
 
 podman load -i website.tar | \
   awk -F':' '{print $NF}' | \
