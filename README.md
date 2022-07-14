@@ -28,6 +28,12 @@ podman manifest push --all website:v1 oci-archive:website.tar
 
 skopeo inspect --raw oci-archive:website.tar | jq '.manifests[].platform.architecture'
 
+podman load -i website.tar | \
+  awk -F':' '{print $NF}' | \
+  xargs -i docker tag {} website
+
+podman run -it --rm website
+
 podman run -d --rm --name registry -p 5000:5000 docker.io/library/registry:2
 
 skopeo copy --all \
