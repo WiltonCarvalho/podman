@@ -38,6 +38,7 @@ podman run -it --rm website
 
 podman run -d --rm --name registry -p 5000:5000 docker.io/library/registry:2
 
+podman manifest push --all website:v1 127.0.0.1:5000/website:v1 --tls-verify=false
 skopeo copy --all \
   oci-archive:website.tar \
   docker://localhost:5000/website:v1 \
