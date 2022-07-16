@@ -12,7 +12,7 @@ podman run --replace -it --rm --pod test \
 ```
 ```
 podman run --replace -it --rm --pod test \
-  --name bastion --entrypoint= docker.io/library/alpine ash
+  --name bastion docker.io/library/alpine ash
 apk add curl mysql-client
 curl http://127.0.0.1
 mysql -h 127.0.0.1 -uroot -ptest -e "show databases"
