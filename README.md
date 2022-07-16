@@ -120,3 +120,58 @@ docker load -i website-arm64.tar | \
 
 docker run -it --rm website-arm64
 ```
+# Podman Play Kube
+```
+cat <<'EOF'> podman_play_kube.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: test
+  name: test
+spec:
+  containers:
+  - args:
+    - ""
+    image: localhost/test:latest
+    name: app0
+    ports:
+    - containerPort: 8080
+      hostPort: 8080
+    env:
+    - name: server_port
+      value: 8080
+    securityContext:
+      capabilities:
+        drop:
+        - CAP_MKNOD
+        - CAP_NET_RAW
+        - CAP_AUDIT_WRITE
+  - args:
+    - ""
+    image: localhost/test:latest
+    name: app1
+    ports:
+    - containerPort: 8081
+      hostPort: 8081
+    env:
+    - name: server_port
+      value: 8081
+    securityContext:
+      capabilities:
+        drop:
+        - CAP_MKNOD
+        - CAP_NET_RAW
+        - CAP_AUDIT_WRITE
+  restartPolicy: Never
+EOF
+```
+```
+podman play kube podman_play_kube.yaml --down
+podman play kube podman_play_kube.yaml
+```
+```
+podman exec -it test-app0 bash
+curl http://test:8080/actuator/health
+curl http://test:8081/actuator/health
+```
