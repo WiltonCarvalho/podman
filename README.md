@@ -1,3 +1,22 @@
+# Multiple containeirs / Single Pod
+```
+podman pod create --replace --name test -p 8080:80 -p 3306:3306
+```
+```
+podman run --replace -it --rm --pod test \
+  --name web docker.io/library/httpd
+```
+```
+podman run --replace -it --rm --pod test \
+  --name db -e MYSQL_ROOT_PASSWORD=test docker.io/library/mariadb
+```
+```
+podman run --replace -it --rm --pod test \
+  --name bastion --entrypoint= docker.io/library/alpine ash
+apk add curl mysql-client
+curl http://127.0.0.1
+mysql -h 127.0.0.1 -uroot -ptest -e "show databases"
+```
 # Podman Multi Architecture Images
 ```
 sudo apt install qemu-user-static podman buildah skopeo jq
