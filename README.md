@@ -122,7 +122,7 @@ docker run -it --rm website-arm64
 ```
 # Podman Play Kube
 ```
-cat <<'EOF'> podman_play_kube.yaml
+cat <<'EOF'> test.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -167,8 +167,8 @@ spec:
 EOF
 ```
 ```
-podman play kube podman_play_kube.yaml --down
-podman play kube podman_play_kube.yaml
+podman play kube test.yaml --down
+podman play kube test.yaml
 ```
 ```
 podman exec -it test-app0 bash
