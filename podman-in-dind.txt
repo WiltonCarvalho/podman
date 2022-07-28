@@ -18,21 +18,29 @@ HEALTHCHECK --start-period=1s --timeout=10s --interval=10s \
   CMD curl -fsSL -H 'User-Agent: HealthCheck' http://127.0.0.1:80
 EOF
 
-su dockremap -c 'podman build --platform=linux/amd64 --format=docker --timestamp=1 -t website:amd64 .'
-su dockremap -c 'podman build --platform=linux/arm64/v8 --format=docker --timestamp=1 -t website:arm64 .'
-su dockremap -c 'podman push website:amd64 docker-archive://tmp/website-amd64.tar'
-su dockremap -c 'podman push website:arm64 docker-archive://tmp/website-arm64.tar'
-su dockremap -c 'podman manifest create website:v1'
-su dockremap -c 'podman manifest add website:v1 docker-archive://tmp/website-amd64.tar'
-su dockremap -c 'podman manifest add website:v1 docker-archive://tmp/website-arm64.tar'
-su dockremap -c 'podman manifest push --all website:v1 oci-archive://tmp/website.tar'
+su dockremap -c '
+  set -ex
+  podman build --platform=linux/amd64 --format=docker --timestamp=1 -t website:amd64 .
+  podman build --platform=linux/arm64/v8 --format=docker --timestamp=1 -t website:arm64 .
+  podman manifest create website:v1 docker-archive://tmp/website-amd64.tar docker-archive://tmp/website-arm64.tar
+  podman manifest push --all website:v1 oci-archive://tmp/website.tar
+'
 skopeo inspect --raw oci-archive://tmp/website.tar | jq
 
-docker load -i /tmp/website-amd64.tar
-docker images
-
 docker run -d --rm --name registry -p 5000:5000 docker.io/library/registry:2
-skopeo copy --all oci-archive://tmp/website.tar docker://localhost:5000/website:v1 --dest-tls-verify=false
-skopeo copy --override-arch=amd64 oci-archive://tmp/website.tar docker://localhost:5000/website:v1-amd64 --dest-tls-verify=false
-skopeo copy --override-arch=arm64 oci-archive://tmp/website.tar docker://localhost:5000/website:v1-arm64 --dest-tls-verify=false
+skopeo copy --all \
+  oci-archive://tmp/website.tar \
+  docker://localhost:5000/website:v1 \
+  --dest-tls-verify=false
+skopeo copy --override-arch=amd64 \
+  oci-archive://tmp/website.tar \
+  docker://localhost:5000/website:v1-amd64 \
+  --dest-tls-verify=false
+skopeo copy --override-arch=arm64 \
+  oci-archive://tmp/website.tar \
+  docker://localhost:5000/website:v1-arm64 \
+  --dest-tls-verify=false
 skopeo inspect --tls-verify=false docker://localhost:5000/website:v1
+
+docker pull localhost:5000/website:v1
+docrer images
