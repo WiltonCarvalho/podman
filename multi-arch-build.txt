@@ -10,6 +10,9 @@ podman manifest push --all test:v1 oci-archive://tmp/test.tar
 
 skopeo inspect --raw oci-archive://tmp/test.tar | jq
 
+
+podman run -d --rm --name registry -p 5000:5000 docker.io/library/registry:2
+
 skopeo copy --all \
   oci-archive://tmp/test.tar \
   docker://localhost:5000/test:v1 \
