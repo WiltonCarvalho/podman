@@ -1,0 +1,31 @@
+sudo apt install qemu-user-static podman buildah skopeo jq
+sudo /etc/init.d/binfmt-support restart
+
+podman build --platform=linux/amd64 --format=oci --timestamp=0 -t test:amd64 .
+podman push test:amd64 oci-archive://tmp/test-amd64.tar
+podman build --platform=linux/arm64/v8 --format=oci --timestamp=0 -t test:arm64 .
+podman push test:arm64 oci-archive://tmp/test-arm64.tar
+podman manifest create test:v1 oci-archive://tmp/test-amd64.tar oci-archive://tmp/test-arm64.tar
+podman manifest push --all test:v1 oci-archive://tmp/test.tar
+
+skopeo inspect --raw oci-archive://tmp/test.tar | jq
+
+skopeo copy --all \
+  oci-archive://tmp/test.tar \
+  docker://localhost:5000/test:v1 \
+  --dest-tls-verify=false
+
+skopeo copy --override-arch=amd64 \
+  docker://localhost:5000/test:v1 \
+  docker://localhost:5000/test:v1-amd64 \
+  --dest-tls-verify=false \
+  --src-tls-verify=false
+
+skopeo copy --override-arch=arm64 \
+  docker://localhost:5000/test:v1 \
+  docker://localhost:5000/test:v1-arm64 \
+  --dest-tls-verify=false \
+  --src-tls-verify=false
+
+skopeo inspect --override-arch=amd64 --tls-verify=false docker://localhost:5000/test:v1 | jq .
+skopeo inspect --override-arch=arm64 --tls-verify=false docker://localhost:5000/test:v1 | jq .
